@@ -8,15 +8,16 @@ const ACCELERATION_RATE = 4.5
 const DEACCELERATION_RATE = 16
 const MAX_SLOPE_ANGLE = 40
 const OBJECT_THROW_FORCE = 150
-const OBJECT_GRAB_DISTANCE = 10
-const OBJECT_GRAB_RAY_DISTANCE = 15
+const OBJECT_GRAB_RAY_DISTANCE = 50
 const OBJECT_FREEZE_RAY_DISTANCE = 50
 var MOUSE_SENSITIVITY = 0.15
 
-var current_velocity = Vector3()
-var grabbed_object : RigidBody = null
-var mouse_event : InputEventMouseMotion = null
-var grab_rotation = Vector3()
+var grab_distance : float = 10
+var current_velocity : Vector3
+var grabbed_object : RigidBody
+var mouse_event : InputEventMouseMotion
+var grab_rotation : Vector3
+var counter = 0
 
 var camera
 var rotation_helper
@@ -61,6 +62,12 @@ func process_input(_delta):
     # Rotate target object
     if Input.is_action_pressed("rotate_object"):
         action_rotate_at_crosshair()
+    
+    if Input.is_action_just_released("increase_distance"):
+        action_change_grab_distance()
+        
+    if Input.is_action_just_released("decrease_distance"):
+        action_change_grab_distance()
         
     update_grab_position()
     
@@ -104,6 +111,10 @@ func _input(event):
         rotation_helper.rotation_degrees = camera_rot
 
 # HELPER METHODS
+func is_grounded() -> bool:
+    var ray = $Feet_CollisionShape/RayCast
+    return ray.is_colliding()
+    
 func any_walk_keys_pressed() -> bool:
     var answer = Input.is_action_pressed("movement_right") or \
                  Input.is_action_pressed("movement_left") or \
@@ -112,18 +123,36 @@ func any_walk_keys_pressed() -> bool:
                 
     return answer
     
-func get_object_at_crosshair(max_distance) -> Dictionary:
+func get_object_at_crosshair(max_distance : float, ignored : Array = []) -> Dictionary:
     var state = get_world().direct_space_state
     var center_position = get_viewport().size / 2
     var ray_from = camera.project_ray_origin(center_position)
     var ray_to = ray_from + camera.project_ray_normal(center_position) * max_distance
-    var ray_result = state.intersect_ray(ray_from, ray_to, [self])
+    var ray_result = state.intersect_ray(ray_from, ray_to, [self] + ignored)
     
     return ray_result
 
 func update_grab_position():
     if grabbed_object != null:
-        grabbed_object.global_transform.origin = camera.global_transform.origin + (-camera.global_transform.basis.z.normalized() * OBJECT_GRAB_DISTANCE)  
+        # Fix grab distance
+        grab_distance = clamp(grab_distance, 10, OBJECT_GRAB_RAY_DISTANCE)
+        
+        var ray_result = get_object_at_crosshair(grab_distance*2, [grabbed_object])
+        if !ray_result.empty() and (ray_result["collider"] is StaticBody or ray_result["collider"] is RigidBody):
+            var hit_distance = camera.global_transform.origin.distance_to(ray_result["position"])
+            grab_distance = min(grab_distance, hit_distance)
+            
+            # Release object if the player gets too close to a wall
+            if grab_distance < 6:        
+                grabbed_object.mode = RigidBody.MODE_RIGID
+                grabbed_object.collision_layer = 1
+                grabbed_object.collision_mask = 1
+                grabbed_object = null
+                return
+        
+        # Update the grabbed object's position and rotation
+        var pos = -camera.global_transform.basis.z.normalized() * grab_distance
+        grabbed_object.global_transform.origin = camera.global_transform.origin + pos 
         grabbed_object.rotation = rotation + grab_rotation
         
 # ACTION METHODS
@@ -131,13 +160,13 @@ func action_grab_ungrab():
     if grabbed_object == null:
         var ray_result = get_object_at_crosshair(OBJECT_GRAB_RAY_DISTANCE)  
         
-        if !ray_result.empty():
-            if ray_result["collider"] is RigidBody:
-                grabbed_object = ray_result["collider"]
-                grabbed_object.mode = RigidBody.MODE_STATIC
-                grabbed_object.collision_layer = 0
-                grabbed_object.collision_mask = 0
-                grab_rotation = Vector3()
+        if !ray_result.empty() and ray_result["collider"] is RigidBody:
+            grabbed_object = ray_result["collider"]
+            grabbed_object.mode = RigidBody.MODE_STATIC
+            grabbed_object.collision_layer = 0
+            grabbed_object.collision_mask = 0
+            grab_distance = camera.global_transform.origin.distance_to(grabbed_object.transform.origin)
+            grab_rotation = Vector3()
     
     else:
         grabbed_object.mode = RigidBody.MODE_RIGID
@@ -249,6 +278,15 @@ func action_walk_around() -> Vector3:
     
     return movement_direction
 
-func is_grounded() -> bool:
-    var ray = $Feet_CollisionShape/RayCast
-    return ray.is_colliding()
+func action_change_grab_distance():
+    var change_rate = 2
+    var delta
+    
+    if Input.is_action_just_released("increase_distance"):
+        delta = change_rate
+        
+    if Input.is_action_just_released("decrease_distance"):
+        delta = -change_rate
+        
+    if grabbed_object != null:
+        grab_distance += delta
