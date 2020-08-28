@@ -3,16 +3,12 @@ It's a physics sandbox, it will have many tools the player can use to interact
 with and manipulate objects.
 
 
-Current features:
-
-    Grab object
-    
-    Release object
-    
-    Freeze object
-    
-    Rotate object
-    
-    Throw object
-
-    Push/pull object
+### Current features:
+* Grab objects
+* Throw objects
+* Freeze objects
+* Rotate objects
+* Push/pull objects
+* Alter gravity of objects
+* Spawn/delete objects (WIP)
+* Scale objects (WIP)
