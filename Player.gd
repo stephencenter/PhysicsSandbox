@@ -21,10 +21,16 @@ var counter = 0
 
 var camera
 var rotation_helper
+var point_helper
+var point_helper2
+var point_helper3
 
 func _ready():
     rotation_helper = $Rotation_Helper
     camera = $Rotation_Helper/Camera
+    point_helper = get_parent().get_node("PointHelper")
+    point_helper2 = get_parent().get_node("PointHelper2")
+    point_helper3 = get_parent().get_node("PointHelper3")
     
     Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
     
@@ -97,6 +103,8 @@ func process_movement(delta, movement_direction):
     current_velocity.x = horizontal_velocity.x
     current_velocity.z = horizontal_velocity.z
     current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
+    print(current_velocity.y)
+    print(is_grounded())
     
 func _input(event):
     if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
@@ -113,7 +121,7 @@ func _input(event):
 # HELPER METHODS
 func is_grounded() -> bool:
     var ray = $Feet_CollisionShape/RayCast
-    return ray.is_colliding()
+    return ray.is_colliding() or is_on_floor()
     
 func any_walk_keys_pressed() -> bool:
     var answer = Input.is_action_pressed("movement_right") or \
@@ -135,25 +143,41 @@ func get_object_at_crosshair(max_distance : float, ignored : Array = []) -> Dict
 func update_grab_position():
     if grabbed_object != null:
         # Fix grab distance
-        grab_distance = clamp(grab_distance, 10, OBJECT_GRAB_RAY_DISTANCE)
-        
-        var ray_result = get_object_at_crosshair(grab_distance*2, [grabbed_object])
-        if !ray_result.empty() and (ray_result["collider"] is StaticBody or ray_result["collider"] is RigidBody):
-            var hit_distance = camera.global_transform.origin.distance_to(ray_result["position"])
-            grab_distance = min(grab_distance, hit_distance)
-            
-            # Release object if the player gets too close to a wall
-            if grab_distance < 6:        
-                grabbed_object.mode = RigidBody.MODE_RIGID
-                grabbed_object.collision_layer = 1
-                grabbed_object.collision_mask = 1
-                grabbed_object = null
-                return
+        grab_distance = clamp(grab_distance, 8, OBJECT_GRAB_RAY_DISTANCE)
         
         # Update the grabbed object's position and rotation
-        var pos = -camera.global_transform.basis.z.normalized() * grab_distance
-        grabbed_object.global_transform.origin = camera.global_transform.origin + pos 
+        var desired_position = -camera.global_transform.basis.z.normalized() * grab_distance + camera.global_transform.origin
+        var delta = desired_position - grabbed_object.global_transform.origin
+        var size = grabbed_object.get_node("MeshInstance").get_aabb().size
+        
+        var state = get_world().direct_space_state
+        var ray_start = grabbed_object.global_transform.origin
+                
+        # x ray
+        var x_ray_end = ray_start + Vector3(delta.x + sign(delta.x)*size.x*0.5, 0, 0)
+        var x_ray_result = state.intersect_ray(ray_start, x_ray_end, [self, grabbed_object])
+        if !x_ray_result.empty() and (x_ray_result["collider"] is PhysicsBody):
+            delta.x = sign(delta.x)*(ray_start.distance_to(x_ray_result["position"]) - size.x*0.5)
+            
+        # y ray
+        var y_ray_end = ray_start + Vector3(0, delta.y + sign(delta.y)*size.y*0.5, 0)
+        var y_ray_result = state.intersect_ray(ray_start, y_ray_end, [self, grabbed_object])
+        if !y_ray_result.empty() and (y_ray_result["collider"] is PhysicsBody):
+            delta.y = sign(delta.y)*(ray_start.distance_to(y_ray_result["position"]) - size.y*0.5)
+        
+        # z ray
+        var z_ray_end = ray_start + Vector3(0, 0, delta.z + sign(delta.z)*size.z*0.5)
+        var z_ray_result = state.intersect_ray(ray_start, z_ray_end, [self, grabbed_object])
+        if !z_ray_result.empty() and (z_ray_result["collider"] is PhysicsBody):
+            delta.z = sign(delta.z)*(ray_start.distance_to(z_ray_result["position"]) - size.z*0.5)
+        
+        grabbed_object.global_transform.origin += delta
         grabbed_object.rotation = rotation + grab_rotation
+        
+        #grab_distance = camera.global_transform.origin.distance_to(grabbed_object.global_transform.origin)
+
+        point_helper2.global_transform.origin = desired_position
+        
         
 # ACTION METHODS
 func action_grab_ungrab():
