@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://Player.gd" type="Script" id=1]
 [ext_resource path="res://assets/32-32_white.png" type="Texture" id=2]
@@ -59,55 +59,13 @@ glow_blend_mode = 0
 glow_bicubic_upscale = true
 adjustment_enabled = true
 
-[sub_resource type="PhysicsMaterial" id=10]
-
-[sub_resource type="BoxShape" id=11]
-extents = Vector3( 3, 3, 3 )
-
-[sub_resource type="CubeMesh" id=12]
-size = Vector3( 6, 6, 6 )
-
-[sub_resource type="SpatialMaterial" id=13]
-albedo_color = Color( 0.536256, 0.0622101, 0.589844, 1 )
-
-[sub_resource type="PhysicsMaterial" id=14]
-
-[sub_resource type="PhysicsMaterial" id=15]
-
-[sub_resource type="PhysicsMaterial" id=16]
-
-[sub_resource type="PhysicsMaterial" id=17]
-
-[sub_resource type="PhysicsMaterial" id=18]
-
-[sub_resource type="PhysicsMaterial" id=19]
-bounce = 0.6
-
-[sub_resource type="SpatialMaterial" id=20]
-albedo_color = Color( 0.140531, 0.589844, 0.0622101, 1 )
-
-[sub_resource type="PhysicsMaterial" id=21]
-bounce = 0.6
-
-[sub_resource type="PhysicsMaterial" id=22]
-bounce = 0.6
-
-[sub_resource type="PhysicsMaterial" id=23]
-bounce = 0.6
-
-[sub_resource type="PhysicsMaterial" id=24]
-bounce = 0.6
-
-[sub_resource type="PhysicsMaterial" id=25]
-bounce = 0.6
-
 [sub_resource type="SphereMesh" id=26]
-
-[sub_resource type="SpatialMaterial" id=27]
-albedo_color = Color( 0.027451, 0.898039, 0.988235, 1 )
 
 [sub_resource type="SpatialMaterial" id=28]
 albedo_color = Color( 0.992157, 1, 0, 1 )
+
+[sub_resource type="SpatialMaterial" id=27]
+albedo_color = Color( 0.027451, 0.898039, 0.988235, 1 )
 
 [sub_resource type="SpatialMaterial" id=29]
 albedo_color = Color( 0.996078, 0.168627, 0.0313726, 1 )
@@ -117,6 +75,7 @@ albedo_color = Color( 0.996078, 0.168627, 0.0313726, 1 )
 [node name="Box" type="Spatial" parent="."]
 
 [node name="Floor_plane" type="MeshInstance" parent="Box"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.192724, 1.90735e-06, 0.00487137 )
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
@@ -365,198 +324,22 @@ expand = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 9 )
 
-[node name="Cubes" type="Spatial" parent="."]
+[node name="PointHelpers" type="Spatial" parent="."]
+visible = false
 
-[node name="Spatial" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube" type="RigidBody" parent="Cubes/Spatial"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.95316, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 10 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial/PurpleCube"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial/PurpleCube"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial2" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube2" type="RigidBody" parent="Cubes/Spatial2"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.23405, 9.95316, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 14 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial2/PurpleCube2"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial2/PurpleCube2"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial3" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube3" type="RigidBody" parent="Cubes/Spatial3"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 9.95316, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 15 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial3/PurpleCube3"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial3/PurpleCube3"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial4" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube4" type="RigidBody" parent="Cubes/Spatial4"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 17.1576, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 16 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial4/PurpleCube4"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial4/PurpleCube4"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial5" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube5" type="RigidBody" parent="Cubes/Spatial5"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 24.1593, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 17 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial5/PurpleCube5"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial5/PurpleCube5"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial6" type="Spatial" parent="Cubes"]
-
-[node name="PurpleCube6" type="RigidBody" parent="Cubes/Spatial6"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.451504, 17.9137, 23.1277 )
-mass = 5.0
-physics_material_override = SubResource( 18 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial6/PurpleCube6"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial6/PurpleCube6"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 13 )
-
-[node name="Spatial7" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube" type="RigidBody" parent="Cubes/Spatial7"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.95316, -21.6551 )
-mass = 5.0
-physics_material_override = SubResource( 19 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial7/GreenCube"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial7/GreenCube"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="Spatial8" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube2" type="RigidBody" parent="Cubes/Spatial8"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.79916, 9.95316, -21.6551 )
-mass = 5.0
-physics_material_override = SubResource( 21 )
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial8/GreenCube2"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial8/GreenCube2"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="Spatial9" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube3" type="RigidBody" parent="Cubes/Spatial9"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.58552, 9.95316, -21.6551 )
-mass = 5.0
-physics_material_override = SubResource( 22 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial9/GreenCube3"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial9/GreenCube3"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="Spatial10" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube4" type="RigidBody" parent="Cubes/Spatial10"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.79556, 17.3734, -21.6551 )
-mass = 5.0
-physics_material_override = SubResource( 23 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial10/GreenCube4"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial10/GreenCube4"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="Spatial11" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube5" type="RigidBody" parent="Cubes/Spatial11"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.51582, 17.3734, -21.6551 )
-mass = 5.0
-physics_material_override = SubResource( 24 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial11/GreenCube5"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial11/GreenCube5"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="Spatial12" type="Spatial" parent="Cubes"]
-
-[node name="GreenCube6" type="RigidBody" parent="Cubes/Spatial12"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.602769, 24.9266, -21.6551 )
-mass = 3.0
-physics_material_override = SubResource( 25 )
-gravity_scale = 3.0
-
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial12/GreenCube6"]
-shape = SubResource( 11 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial12/GreenCube6"]
-mesh = SubResource( 12 )
-material/0 = SubResource( 20 )
-
-[node name="PointHelper" type="MeshInstance" parent="."]
-transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.410652, 16.241, 85.8257 )
-mesh = SubResource( 26 )
-material/0 = SubResource( 27 )
-
-[node name="PointHelper2" type="MeshInstance" parent="."]
+[node name="PointHelper2" type="MeshInstance" parent="PointHelpers"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.410652, 16.241, 85.8257 )
 mesh = SubResource( 26 )
 material/0 = SubResource( 28 )
 
-[node name="PointHelper3" type="MeshInstance" parent="."]
+[node name="PointHelper" type="MeshInstance" parent="PointHelpers"]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.410652, 16.241, 85.8257 )
+mesh = SubResource( 26 )
+material/0 = SubResource( 27 )
+
+[node name="PointHelper3" type="MeshInstance" parent="PointHelpers"]
 transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.410652, 16.241, 85.8257 )
 mesh = SubResource( 26 )
 material/0 = SubResource( 29 )
+
+[node name="Objects" type="Spatial" parent="."]
