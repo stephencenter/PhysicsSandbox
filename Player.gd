@@ -8,8 +8,9 @@ const ACCELERATION_RATE = 4.5
 const DEACCELERATION_RATE = 16
 const MAX_SLOPE_ANGLE = 40
 const OBJECT_THROW_FORCE = 150
-const OBJECT_GRAB_RAY_DISTANCE = 50
-const OBJECT_FREEZE_RAY_DISTANCE = 50
+const ACTION_RANGE_SHORT = 8
+const ACTION_RANGE_MID = 50
+const ACTION_RANGE_LONG = 250
 var MOUSE_SENSITIVITY = 0.15
 
 var grab_distance : float = 10
@@ -69,13 +70,27 @@ func process_input(_delta):
     if Input.is_action_pressed("rotate_object"):
         action_rotate_at_crosshair()
     
-    if Input.is_action_just_released("increase_distance"):
-        action_change_grab_distance()
+    # Scale target object
+    if Input.is_action_pressed("scale_object"):
+        action_scale_object()
         
-    if Input.is_action_just_released("decrease_distance"):
-        action_change_grab_distance()
+    # Alter target object's gravity
+    elif Input.is_action_pressed("alter_gravity"):
+        action_alter_gravity()
+    
+    # Push/Pull target object
+    else:
+        if Input.is_action_just_released("increase_distance"):
+            action_change_grab_distance()
+            
+        if Input.is_action_just_released("decrease_distance"):
+            action_change_grab_distance()
+    
+    if Input.is_action_just_pressed("reset_grab"):
+        grab_distance = ACTION_RANGE_SHORT*grabbed_object.get_parent_spatial().scale.x
         
     update_grab_position()
+    update_infohud()
     
     return movement_direction
                 
@@ -103,8 +118,6 @@ func process_movement(delta, movement_direction):
     current_velocity.x = horizontal_velocity.x
     current_velocity.z = horizontal_velocity.z
     current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
-    print(current_velocity.y)
-    print(is_grounded())
     
 func _input(event):
     if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
@@ -143,12 +156,13 @@ func get_object_at_crosshair(max_distance : float, ignored : Array = []) -> Dict
 func update_grab_position():
     if grabbed_object != null:
         # Fix grab distance
-        grab_distance = clamp(grab_distance, 8, OBJECT_GRAB_RAY_DISTANCE)
+        grab_distance = clamp(grab_distance, ACTION_RANGE_SHORT, ACTION_RANGE_LONG)
         
         # Update the grabbed object's position and rotation
         var desired_position = -camera.global_transform.basis.z.normalized() * grab_distance + camera.global_transform.origin
         var delta = desired_position - grabbed_object.global_transform.origin
         var size = grabbed_object.get_node("MeshInstance").get_aabb().size
+        size *= grabbed_object.get_parent_spatial().scale.x
         
         var state = get_world().direct_space_state
         var ray_start = grabbed_object.global_transform.origin
@@ -174,15 +188,50 @@ func update_grab_position():
         grabbed_object.global_transform.origin += delta
         grabbed_object.rotation = rotation + grab_rotation
         
-        #grab_distance = camera.global_transform.origin.distance_to(grabbed_object.global_transform.origin)
+        var cam_point = camera.global_transform.origin
+        grab_distance = min(cam_point.distance_to(grabbed_object.global_transform.origin), grab_distance)
 
-        point_helper2.global_transform.origin = desired_position
+func update_infohud():
+    var the_object : RigidBody
+
+    if grabbed_object == null:  
+        var ray_result = get_object_at_crosshair(250)
+        if !ray_result.empty() && ray_result["collider"] is RigidBody:
+            the_object = ray_result["collider"]
+                
+    else:
+        the_object = grabbed_object
+        
+    if the_object == null:
+        $HUD/InfoHUD/Position.set_text("")
+        $HUD/InfoHUD/Rotation.set_text("")
+        $HUD/InfoHUD/Scale.set_text("")
+        $HUD/InfoHUD/Gravity.set_text("")
+        $HUD/InfoHUD/IsFrozen.set_text("")
+        $HUD/InfoHUD/Distance.set_text("")
         
         
+        return
+    
+    $HUD/InfoHUD/Position.set_text("Position: %s" % the_object.global_transform.origin)
+    $HUD/InfoHUD/Rotation.set_text("Rotation: %s" % grab_rotation)
+    $HUD/InfoHUD/Scale.set_text("Scale: %s" % the_object.get_parent_spatial().scale)
+    $HUD/InfoHUD/Gravity.set_text("Gravity: %s" % the_object.gravity_scale)
+    
+    var cam_point = camera.global_transform.origin
+    var obj_point = the_object.global_transform.origin
+    $HUD/InfoHUD/Distance.set_text("Distance: %s" % cam_point.distance_to(obj_point))
+    
+    if the_object.mode == RigidBody.MODE_STATIC:
+        $HUD/InfoHUD/IsFrozen.set_text("IsFrozen: Yes")
+    else:
+        $HUD/InfoHUD/IsFrozen.set_text("IsFrozen: No")
+        
+    
 # ACTION METHODS
 func action_grab_ungrab():
     if grabbed_object == null:
-        var ray_result = get_object_at_crosshair(OBJECT_GRAB_RAY_DISTANCE)  
+        var ray_result = get_object_at_crosshair(ACTION_RANGE_LONG)  
         
         if !ray_result.empty() and ray_result["collider"] is RigidBody:
             grabbed_object = ray_result["collider"]
@@ -210,7 +259,7 @@ func action_throw_object():
         
 func action_freeze_at_crosshair():
     if grabbed_object == null:  
-        var ray_result = get_object_at_crosshair(OBJECT_FREEZE_RAY_DISTANCE)          
+        var ray_result = get_object_at_crosshair(ACTION_RANGE_LONG)          
         
         if !ray_result.empty() && ray_result["collider"] is RigidBody:
             if ray_result["collider"].mode == RigidBody.MODE_STATIC:
@@ -235,48 +284,35 @@ func action_jump():
         current_velocity.y = JUMP_FORCE    
 
 func action_rotate_at_crosshair():
-    # Determine which object to rotate
-    var the_object
-
-    if grabbed_object == null:  
-        var ray_result = get_object_at_crosshair(OBJECT_FREEZE_RAY_DISTANCE)
-        if !ray_result.empty() && ray_result["collider"] is RigidBody:
-            if ray_result["collider"].mode == RigidBody.MODE_STATIC:
-                the_object = ray_result["collider"]
-                
-    else:
-        the_object = grabbed_object
-        
-    if the_object == null:
-        return
-        
-    # Determine how much to rotate the object
-    var cam_xform = camera.get_global_transform()
-    var rotation_vector = Vector2()
+    if mouse_event is InputEventMouseMotion:
+        # Determine which object to rotate
+        var the_object
     
-    if any_walk_keys_pressed():
-        if Input.is_action_pressed("movement_forward"):
-            rotation_vector.x += 1
-        if Input.is_action_pressed("movement_backward"):
-            rotation_vector.x -= 1
-        if Input.is_action_pressed("movement_left"):
-            rotation_vector.y -= 1
-        if Input.is_action_pressed("movement_right"):
-            rotation_vector.y += 1
-        
-        rotation_vector.x *= -0.03
-        rotation_vector.y *= 0.03
+        if grabbed_object == null:  
+            var ray_result = get_object_at_crosshair(ACTION_RANGE_LONG)
+            if !ray_result.empty() && ray_result["collider"] is RigidBody:
+                if ray_result["collider"].mode == RigidBody.MODE_STATIC:
+                    the_object = ray_result["collider"]
+                    
+        else:
+            the_object = grabbed_object
             
-    elif mouse_event is InputEventMouseMotion:
+        if the_object == null:
+            return
+            
+        # Determine how much to rotate the object
+        var cam_xform = camera.get_global_transform()
+        var rotation_vector = Vector2()
+        
         rotation_vector.x = deg2rad(mouse_event.relative.y * MOUSE_SENSITIVITY)
         rotation_vector.y = deg2rad(mouse_event.relative.x * MOUSE_SENSITIVITY)
         mouse_event = null
-        
-    # Rotate the object
-    var before = the_object.rotation
-    the_object.rotate(cam_xform.basis[0], rotation_vector.x)
-    the_object.rotate(cam_xform.basis[1], rotation_vector.y)
-    grab_rotation += the_object.rotation - before    
+            
+        # Rotate the object
+        var before = the_object.rotation
+        the_object.rotate(cam_xform.basis[0], rotation_vector.x)
+        the_object.rotate(cam_xform.basis[1], rotation_vector.y)
+        grab_rotation += the_object.rotation - before    
     
 func action_walk_around() -> Vector3: 
     var movement_direction = Vector3()
@@ -314,3 +350,69 @@ func action_change_grab_distance():
         
     if grabbed_object != null:
         grab_distance += delta
+
+func action_scale_object():
+    var the_object : Spatial
+
+    if grabbed_object == null:  
+        var ray_result = get_object_at_crosshair(ACTION_RANGE_LONG)
+        if !ray_result.empty() && ray_result["collider"] is RigidBody:
+            the_object = ray_result["collider"].get_parent_spatial()
+                
+    else:
+        the_object = grabbed_object.get_parent_spatial()
+        
+    if the_object == null:
+        return
+        
+    var change_rate = Vector3(0.1, 0.1, 0.1)
+    var delta = Vector3.ZERO
+    
+    if Input.is_action_just_released("increase_distance"):
+        delta = change_rate
+        
+    elif Input.is_action_just_released("decrease_distance"):
+        delta = -change_rate
+        
+    else:
+        return
+        
+    the_object.scale = the_object.scale + delta
+    if the_object.scale < Vector3(0.05, 0.05, 0.05):
+        the_object.scale = Vector3(0.05, 0.05, 0.05)
+    if the_object.scale > Vector3(10, 10, 10):
+        the_object.scale = Vector3(10, 10, 10)
+
+func action_alter_gravity():
+    var the_object : RigidBody
+
+    if grabbed_object == null:  
+        var ray_result = get_object_at_crosshair(ACTION_RANGE_LONG)
+        if !ray_result.empty() && ray_result["collider"] is RigidBody:
+            the_object = ray_result["collider"]
+                
+    else:
+        the_object = grabbed_object
+        
+    if the_object == null:
+        return
+        
+    var change_rate = 0.2
+    var delta
+    
+    if Input.is_action_just_released("increase_distance"):
+        delta = change_rate
+        
+    elif Input.is_action_just_released("decrease_distance"):
+        delta = -change_rate
+        
+    else:
+        return
+        
+    the_object.gravity_scale += delta
+    the_object.gravity_scale = clamp(the_object.gravity_scale, -50, 50)
+    
+    if -0.01 < the_object.gravity_scale and the_object.gravity_scale < 0.01:
+        the_object.gravity_scale = 0
+        
+    the_object.apply_impulse(Vector3(0, 0, 0), -camera.global_transform.basis.z.normalized())

@@ -225,6 +225,73 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="InfoHUD" type="Control" parent="Player/HUD"]
+margin_left = 1.0
+margin_top = 1.0
+margin_right = 1.0
+margin_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Position" type="Label" parent="Player/HUD/InfoHUD"]
+margin_right = 130.0
+margin_bottom = 14.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Rotation" type="Label" parent="Player/HUD/InfoHUD"]
+margin_top = 15.0
+margin_right = 130.0
+margin_bottom = 29.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Scale" type="Label" parent="Player/HUD/InfoHUD"]
+margin_top = 30.0
+margin_right = 130.0
+margin_bottom = 44.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Gravity" type="Label" parent="Player/HUD/InfoHUD"]
+margin_top = 45.0
+margin_right = 130.0
+margin_bottom = 59.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="IsFrozen" type="Label" parent="Player/HUD/InfoHUD"]
+margin_top = 60.0
+margin_right = 130.0
+margin_bottom = 74.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Distance" type="Label" parent="Player/HUD/InfoHUD"]
+margin_top = 75.0
+margin_right = 130.0
+margin_bottom = 89.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+
 [node name="Crosshair" type="Control" parent="Player/HUD"]
 modulate = Color( 1, 1, 1, 0.705882 )
 anchor_left = 0.5
@@ -300,158 +367,182 @@ environment = SubResource( 9 )
 
 [node name="Cubes" type="Spatial" parent="."]
 
-[node name="PurpleCube" type="RigidBody" parent="Cubes"]
+[node name="Spatial" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube" type="RigidBody" parent="Cubes/Spatial"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.95316, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 10 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial/PurpleCube"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial/PurpleCube"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="PurpleCube2" type="RigidBody" parent="Cubes"]
+[node name="Spatial2" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube2" type="RigidBody" parent="Cubes/Spatial2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.23405, 9.95316, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 14 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube2"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial2/PurpleCube2"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube2"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial2/PurpleCube2"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="PurpleCube3" type="RigidBody" parent="Cubes"]
+[node name="Spatial3" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube3" type="RigidBody" parent="Cubes/Spatial3"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 9.95316, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 15 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube3"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial3/PurpleCube3"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube3"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial3/PurpleCube3"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="PurpleCube4" type="RigidBody" parent="Cubes"]
+[node name="Spatial4" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube4" type="RigidBody" parent="Cubes/Spatial4"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 17.1576, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 16 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube4"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial4/PurpleCube4"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube4"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial4/PurpleCube4"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="PurpleCube5" type="RigidBody" parent="Cubes"]
+[node name="Spatial5" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube5" type="RigidBody" parent="Cubes/Spatial5"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.85143, 24.1593, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 17 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube5"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial5/PurpleCube5"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube5"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial5/PurpleCube5"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="PurpleCube6" type="RigidBody" parent="Cubes"]
+[node name="Spatial6" type="Spatial" parent="Cubes"]
+
+[node name="PurpleCube6" type="RigidBody" parent="Cubes/Spatial6"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.451504, 17.9137, 23.1277 )
 mass = 5.0
 physics_material_override = SubResource( 18 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/PurpleCube6"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial6/PurpleCube6"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/PurpleCube6"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial6/PurpleCube6"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 13 )
 
-[node name="GreenCube" type="RigidBody" parent="Cubes"]
+[node name="Spatial7" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube" type="RigidBody" parent="Cubes/Spatial7"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.95316, -21.6551 )
 mass = 5.0
 physics_material_override = SubResource( 19 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial7/GreenCube"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial7/GreenCube"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
-[node name="GreenCube2" type="RigidBody" parent="Cubes"]
+[node name="Spatial8" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube2" type="RigidBody" parent="Cubes/Spatial8"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.79916, 9.95316, -21.6551 )
 mass = 5.0
 physics_material_override = SubResource( 21 )
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube2"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial8/GreenCube2"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube2"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial8/GreenCube2"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
-[node name="GreenCube3" type="RigidBody" parent="Cubes"]
+[node name="Spatial9" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube3" type="RigidBody" parent="Cubes/Spatial9"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.58552, 9.95316, -21.6551 )
 mass = 5.0
 physics_material_override = SubResource( 22 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube3"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial9/GreenCube3"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube3"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial9/GreenCube3"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
-[node name="GreenCube4" type="RigidBody" parent="Cubes"]
+[node name="Spatial10" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube4" type="RigidBody" parent="Cubes/Spatial10"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.79556, 17.3734, -21.6551 )
 mass = 5.0
 physics_material_override = SubResource( 23 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube4"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial10/GreenCube4"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube4"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial10/GreenCube4"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
-[node name="GreenCube5" type="RigidBody" parent="Cubes"]
+[node name="Spatial11" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube5" type="RigidBody" parent="Cubes/Spatial11"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.51582, 17.3734, -21.6551 )
 mass = 5.0
 physics_material_override = SubResource( 24 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube5"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial11/GreenCube5"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube5"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial11/GreenCube5"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
-[node name="GreenCube6" type="RigidBody" parent="Cubes"]
+[node name="Spatial12" type="Spatial" parent="Cubes"]
+
+[node name="GreenCube6" type="RigidBody" parent="Cubes/Spatial12"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.602769, 24.9266, -21.6551 )
 mass = 3.0
 physics_material_override = SubResource( 25 )
 gravity_scale = 3.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Cubes/GreenCube6"]
+[node name="CollisionShape" type="CollisionShape" parent="Cubes/Spatial12/GreenCube6"]
 shape = SubResource( 11 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube6"]
+[node name="MeshInstance" type="MeshInstance" parent="Cubes/Spatial12/GreenCube6"]
 mesh = SubResource( 12 )
 material/0 = SubResource( 20 )
 
