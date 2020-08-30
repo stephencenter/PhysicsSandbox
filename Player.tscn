@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scripts/Player.gd" type="Script" id=1]
 
@@ -8,6 +8,14 @@ height = 9.0
 
 [sub_resource type="BoxShape" id=2]
 extents = Vector3( 0.8, 0.2, 0.8 )
+
+[sub_resource type="DynamicFontData" id=5]
+font_path = "res://Assets/Titillium-Regular.otf"
+
+[sub_resource type="DynamicFont" id=4]
+size = 20
+use_mipmaps = true
+font_data = SubResource( 5 )
 
 [sub_resource type="StreamTexture" id=3]
 flags = 5
@@ -123,6 +131,32 @@ text = "TEst123ferretman"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ErrorHUD" type="Control" parent="HUD"]
+margin_left = 983.0
+margin_top = 1.0
+margin_right = 1023.0
+margin_bottom = 41.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Error" type="Label" parent="HUD/ErrorHUD"]
+margin_left = -392.0
+margin_right = 40.0
+margin_bottom = 41.0
+grow_horizontal = 0
+custom_fonts/font = SubResource( 4 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Timer" type="Timer" parent="HUD/ErrorHUD"]
+wait_time = 3.0
+one_shot = true
 
 [node name="Crosshair" type="Control" parent="HUD"]
 modulate = Color( 1, 1, 1, 0.705882 )

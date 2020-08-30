@@ -44,6 +44,10 @@ func _physics_process(delta):
         process_movement_noclip(delta, movement_direction)
     else:
         process_movement(delta, movement_direction)
+        
+    update_grab_position()
+    update_infohud()
+    show_error()
     
 func process_input(_delta):
     var movement_direction = Vector3()
@@ -111,10 +115,6 @@ func process_input(_delta):
         
     if Input.is_action_just_pressed("toggle_noclip"):
         action_toggle_noclip()
-        
-    print(noclip)
-    update_grab_position()
-    update_infohud()
     
     return movement_direction
                 
@@ -158,8 +158,7 @@ func process_movement_noclip(delta, movement_direction):
     
     current_velocity = current_velocity.linear_interpolate(target, 20*delta)
     current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
-
-    
+ 
 func _input(event):
     if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
         if Input.is_action_pressed("rotate_object"):
@@ -278,7 +277,17 @@ func update_infohud():
         $HUD/InfoHUD/IsFrozen.set_text("IsFrozen: Yes")
     else:
         $HUD/InfoHUD/IsFrozen.set_text("IsFrozen: No")
-           
+    
+func show_error(message = null):    
+    if message != null:
+        $HUD/ErrorHUD/Error.set_text(message)
+        $HUD/ErrorHUD/Timer.wait_time = 3
+        $HUD/ErrorHUD/Timer.start()
+        
+        
+    if $HUD/ErrorHUD/Timer.time_left == 0:
+        $HUD/ErrorHUD/Error.set_text("")
+       
 # ACTION METHODS
 func action_grab_ungrab():
     if grabbed_object == null:
@@ -316,6 +325,18 @@ func action_freeze_object():
         return
         
     if the_object.mode != RigidBody.MODE_STATIC or the_object == grabbed_object:
+        if the_object == grabbed_object:
+            var object = grabbed_object.global_transform.origin
+            var player = global_transform.origin
+            var cam = camera.global_transform.origin
+            
+            var distance = object.distance_to(player)
+            var distance2 = object.distance_to(cam)
+            var min_distance = ACTION_RANGE_SHORT*grabbed_object.get_parent_spatial().scale.x
+            if distance < min_distance or distance2 < min_distance:
+                show_error("Can't freeze grabbed objects that close to player!")
+                return
+            
         the_object.get_parent_spatial().store_velocity()
         the_object.mode = RigidBody.MODE_STATIC
         
