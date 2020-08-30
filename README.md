@@ -13,3 +13,4 @@ with and manipulate objects.
 * Spawn/delete objects (WIP)
 * Scale objects (WIP)
 * Reset momentum of objects
+* Toggle noclip

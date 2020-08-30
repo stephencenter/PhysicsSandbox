@@ -3,6 +3,7 @@ extends KinematicBody
 # Constant
 const PLAYER_GRAVITY = -100
 const MAX_HORIZONTAL_SPEED = 20
+const NOCLIP_VERT_SPEED = 20
 const JUMP_FORCE = 40
 const ACCELERATION_RATE = 4.5
 const DEACCELERATION_RATE = 16
@@ -18,6 +19,7 @@ var current_velocity : Vector3
 var grabbed_object : RigidBody
 var mouse_event : InputEventMouseMotion
 var grab_rotation : Vector3
+var noclip : bool = false
 var counter = 0
 
 var camera
@@ -38,19 +40,22 @@ func _ready():
     
 func _physics_process(delta):
     var movement_direction = process_input(delta)
-    process_movement(delta, movement_direction)
+    if noclip:
+        process_movement_noclip(delta, movement_direction)
+    else:
+        process_movement(delta, movement_direction)
     
 func process_input(_delta):
     var movement_direction = Vector3()
     
     # Walk
-    if any_walk_keys_pressed():
-        movement_direction = action_walk_around()
+    if any_movement_keys_pressed():
+        movement_direction = action_move_around()
     
     # Jump
-    if Input.is_action_just_pressed("movement_jump"):
+    if Input.is_action_just_pressed("movement_jump") and !noclip:
         action_jump()
-            
+        
     # Toggle Mouselook
     if Input.is_action_just_pressed("ui_cancel"):
         action_toggle_mouselook()
@@ -104,6 +109,10 @@ func process_input(_delta):
     if Input.is_action_just_pressed("reset_velocity"):
         action_reset_velocity()
         
+    if Input.is_action_just_pressed("toggle_noclip"):
+        action_toggle_noclip()
+        
+    print(noclip)
     update_grab_position()
     update_infohud()
     
@@ -112,6 +121,7 @@ func process_input(_delta):
 func process_movement(delta, movement_direction):
     movement_direction.y = 0
     movement_direction = movement_direction.normalized()
+    
     current_velocity.y += delta*PLAYER_GRAVITY
     
     var horizontal_velocity = current_velocity
@@ -135,6 +145,20 @@ func process_movement(delta, movement_direction):
     current_velocity.x = horizontal_velocity.x
     current_velocity.z = horizontal_velocity.z
     current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
+
+func process_movement_noclip(delta, movement_direction):
+    movement_direction = movement_direction.normalized()
+    
+    var target = movement_direction
+    if Input.is_action_pressed("sprint"):
+        target *= MAX_HORIZONTAL_SPEED*4
+    else:
+        target *= MAX_HORIZONTAL_SPEED*2
+        
+    
+    current_velocity = current_velocity.linear_interpolate(target, 20*delta)
+    current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
+
     
 func _input(event):
     if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
@@ -145,7 +169,7 @@ func _input(event):
         rotation_helper.rotate_x(deg2rad(event.relative.y * MOUSE_SENSITIVITY))
         self.rotate_y(deg2rad(event.relative.x * MOUSE_SENSITIVITY * -1))
         var camera_rot = rotation_helper.rotation_degrees
-        camera_rot.x = clamp(camera_rot.x, -80, 80)
+        camera_rot.x = clamp(camera_rot.x, -85, 85)
         rotation_helper.rotation_degrees = camera_rot
 
 # HELPER METHODS
@@ -153,11 +177,14 @@ func is_grounded() -> bool:
     var ray = $Feet_CollisionShape/RayCast
     return ray.is_colliding() or is_on_floor()
     
-func any_walk_keys_pressed() -> bool:
+func any_movement_keys_pressed() -> bool:
     var answer = Input.is_action_pressed("movement_right") or \
                  Input.is_action_pressed("movement_left") or \
                  Input.is_action_pressed("movement_forward") or \
                  Input.is_action_pressed("movement_backward")
+                
+    if noclip:
+        answer = answer or Input.is_action_pressed("movement_jump") or Input.is_action_pressed("noclip_fall")
                 
     return answer
     
@@ -196,22 +223,23 @@ func update_grab_position():
         var delta = desired_delta
                 
         # x ray
-        var x_ray_end = ray_start + Vector3(delta.x + sign(delta.x)*size.x*0.5, 0, 0)
-        var x_ray_result = state.intersect_ray(ray_start, x_ray_end, [self, grabbed_object])
-        if !x_ray_result.empty() and (x_ray_result["collider"] is PhysicsBody):
-            delta.x = sign(delta.x)*(ray_start.distance_to(x_ray_result["position"]) - size.x*0.5)
+        if !noclip:
+            var x_ray_end = ray_start + Vector3(delta.x + sign(delta.x)*size.x*0.5, 0, 0)
+            var x_ray_result = state.intersect_ray(ray_start, x_ray_end, [self, grabbed_object])
+            if !x_ray_result.empty() and (x_ray_result["collider"] is PhysicsBody):
+                delta.x = sign(delta.x)*(ray_start.distance_to(x_ray_result["position"]) - size.x*0.5)
+                
+            # y ray
+            var y_ray_end = ray_start + Vector3(0, delta.y + sign(delta.y)*size.y*0.5, 0)
+            var y_ray_result = state.intersect_ray(ray_start, y_ray_end, [self, grabbed_object])
+            if !y_ray_result.empty() and (y_ray_result["collider"] is PhysicsBody):
+                delta.y = sign(delta.y)*(ray_start.distance_to(y_ray_result["position"]) - size.y*0.5)
             
-        # y ray
-        var y_ray_end = ray_start + Vector3(0, delta.y + sign(delta.y)*size.y*0.5, 0)
-        var y_ray_result = state.intersect_ray(ray_start, y_ray_end, [self, grabbed_object])
-        if !y_ray_result.empty() and (y_ray_result["collider"] is PhysicsBody):
-            delta.y = sign(delta.y)*(ray_start.distance_to(y_ray_result["position"]) - size.y*0.5)
-        
-        # z ray
-        var z_ray_end = ray_start + Vector3(0, 0, delta.z + sign(delta.z)*size.z*0.5)
-        var z_ray_result = state.intersect_ray(ray_start, z_ray_end, [self, grabbed_object])
-        if !z_ray_result.empty() and (z_ray_result["collider"] is PhysicsBody):
-            delta.z = sign(delta.z)*(ray_start.distance_to(z_ray_result["position"]) - size.z*0.5)
+            # z ray
+            var z_ray_end = ray_start + Vector3(0, 0, delta.z + sign(delta.z)*size.z*0.5)
+            var z_ray_result = state.intersect_ray(ray_start, z_ray_end, [self, grabbed_object])
+            if !z_ray_result.empty() and (z_ray_result["collider"] is PhysicsBody):
+                delta.z = sign(delta.z)*(ray_start.distance_to(z_ray_result["position"]) - size.z*0.5)
         
         grabbed_object.global_transform.origin += delta
         grabbed_object.rotation = rotation + grab_rotation
@@ -333,12 +361,8 @@ func action_rotate_object():
         the_object.rotate(cam_xform.basis[1], rotation_vector.y)
         grab_rotation += the_object.rotation - before    
     
-func action_walk_around() -> Vector3: 
-    var movement_direction = Vector3()
-    
-    if Input.is_action_pressed("rotate_object"):
-        return movement_direction
-        
+func action_move_around() -> Vector3:
+    var movement_direction : Vector3 = Vector3()    
     var cam_xform = camera.get_global_transform()
     var input_movement_vector = Vector2()
     
@@ -409,7 +433,7 @@ func action_alter_gravity():
     if the_object == null:
         return
         
-    var change_rate = 0.2
+    var change_rate = 0.5
     var delta
     
     if Input.is_action_just_released("increase_distance"):
@@ -461,3 +485,13 @@ func action_reset_velocity():
     the_object.get_parent_spatial().stored_linear = Vector3(0, 0, 0)
     the_object.get_parent_spatial().stored_angular = Vector3(0, 0, 0)
     
+func action_toggle_noclip():
+    if noclip:
+        noclip = false
+        collision_layer = 1
+        collision_mask = 1
+    
+    else:
+        noclip = true
+        collision_layer = 2
+        collision_mask = 2
