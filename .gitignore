@@ -1,8 +1,9 @@
 .import/
 icon.png
-assets/
+Assets/
 icon.png.import
 Simple_Audio_Player.tscn
 Pause_Popup.tscn
-Debug_Display.tscn
-Tests/
+Release/
+export_presets.cfg
+

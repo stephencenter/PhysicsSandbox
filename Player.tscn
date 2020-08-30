@@ -1,0 +1,152 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Scripts/Player.gd" type="Script" id=1]
+
+[sub_resource type="CapsuleShape" id=1]
+radius = 1.2
+height = 9.0
+
+[sub_resource type="BoxShape" id=2]
+extents = Vector3( 0.8, 0.2, 0.8 )
+
+[sub_resource type="StreamTexture" id=3]
+flags = 5
+load_path = "res://.import/crosshair.png-7bed3294e640fe9ca357247b0602b756.stex"
+
+[node name="Player" type="KinematicBody"]
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="Body_CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 5.81098, 0 )
+shape = SubResource( 1 )
+
+[node name="Feet_CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.493176, 0 )
+shape = SubResource( 2 )
+
+[node name="RayCast" type="RayCast" parent="Feet_CollisionShape"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.100211, 0 )
+enabled = true
+
+[node name="Rotation_Helper" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.239, 0 )
+
+[node name="Camera" type="Camera" parent="Rotation_Helper"]
+transform = Transform( -1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, 0, -0.307539, -0.0646362 )
+current = true
+fov = 80.0
+far = 180.0
+
+[node name="HUD" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="InfoHUD" type="Control" parent="HUD"]
+margin_left = 1.0
+margin_top = 1.0
+margin_right = 1.0
+margin_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Position" type="Label" parent="HUD/InfoHUD"]
+margin_right = 130.0
+margin_bottom = 14.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Rotation" type="Label" parent="HUD/InfoHUD"]
+margin_top = 15.0
+margin_right = 130.0
+margin_bottom = 29.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Scale" type="Label" parent="HUD/InfoHUD"]
+margin_top = 30.0
+margin_right = 130.0
+margin_bottom = 44.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Gravity" type="Label" parent="HUD/InfoHUD"]
+margin_top = 45.0
+margin_right = 130.0
+margin_bottom = 59.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="IsFrozen" type="Label" parent="HUD/InfoHUD"]
+margin_top = 60.0
+margin_right = 130.0
+margin_bottom = 74.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Distance" type="Label" parent="HUD/InfoHUD"]
+margin_top = 75.0
+margin_right = 130.0
+margin_bottom = 89.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+
+[node name="Velocity" type="Label" parent="HUD/InfoHUD"]
+margin_top = 90.0
+margin_right = 130.0
+margin_bottom = 104.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "TEst123ferretman"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Crosshair" type="Control" parent="HUD"]
+modulate = Color( 1, 1, 1, 0.705882 )
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -21.0
+margin_top = -21.0
+margin_right = 21.0
+margin_bottom = 21.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Dot" type="TextureRect" parent="HUD/Crosshair"]
+anchor_right = 0.952
+anchor_bottom = 0.952
+margin_left = 18.0
+margin_top = 18.047
+margin_right = -14.984
+margin_bottom = -14.937
+texture = SubResource( 3 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}

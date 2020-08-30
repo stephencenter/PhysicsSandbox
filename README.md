@@ -12,3 +12,4 @@ with and manipulate objects.
 * Alter gravity of objects
 * Spawn/delete objects (WIP)
 * Scale objects (WIP)
+* Reset momentum of objects
