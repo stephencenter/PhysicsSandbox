@@ -22,19 +22,23 @@ var grab_rotation : Vector3
 var noclip : bool = false
 var counter = 0
 
-var camera
+var camera : Camera
 var rotation_helper
 
 onready var the_world = get_parent()
-onready var point_helper = get_parent().get_node("PointHelpers/PointHelper")
-onready var point_helper2 = get_parent().get_node("PointHelpers/PointHelper2")
-onready var point_helper3 = get_parent().get_node("PointHelpers/PointHelper3")
 onready var object_cube = load("res://Objects/cube.tscn")
 onready var object_sphere = load("res://Objects/sphere.tscn")
+onready var object_plank = load("res://Objects/plank.tscn")
+var point_helper : MeshInstance
+var point_helper2 : MeshInstance
+var point_helper3 : MeshInstance
 
 func _ready():
     rotation_helper = $Rotation_Helper
-    camera = $Rotation_Helper/Camera    
+    camera = $Rotation_Helper/Camera   
+    point_helper = $PointHelpers/PointHelper
+    point_helper2 = $PointHelpers/PointHelper2
+    point_helper3 = $PointHelpers/PointHelper3
     
     Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
     
@@ -101,7 +105,13 @@ func process_input(_delta):
             grab_distance = ACTION_RANGE_SHORT*grabbed_object.get_parent_spatial().scale.x
     
     if Input.is_action_just_pressed("create_object"):
-        action_create_object()
+        action_create_object(object_cube)
+        
+    if Input.is_action_just_pressed("test_hotkey"):
+        action_create_object(object_plank)
+        
+    if Input.is_action_just_pressed("test_hotkey2"):
+        action_create_object(object_sphere)
         
     if Input.is_action_just_pressed("vanish_object"):
         action_vanish_object()
@@ -154,7 +164,6 @@ func process_movement_noclip(delta, movement_direction):
         target *= MAX_HORIZONTAL_SPEED*4
     else:
         target *= MAX_HORIZONTAL_SPEED*2
-        
     
     current_velocity = current_velocity.linear_interpolate(target, 20*delta)
     current_velocity = move_and_slide(current_velocity, Vector3(0, 1, 0), 0.05, 4, deg2rad(MAX_SLOPE_ANGLE))
@@ -181,10 +190,7 @@ func any_movement_keys_pressed() -> bool:
                  Input.is_action_pressed("movement_left") or \
                  Input.is_action_pressed("movement_forward") or \
                  Input.is_action_pressed("movement_backward")
-                
-    if noclip:
-        answer = answer or Input.is_action_pressed("movement_jump") or Input.is_action_pressed("noclip_fall")
-                
+                 
     return answer
     
 func get_object_at_crosshair(max_distance : float, ignored : Array = []) -> Dictionary:
@@ -213,33 +219,40 @@ func update_grab_position():
         
         # Update the grabbed object's position and rotation
         var desired_position = -camera.global_transform.basis.z.normalized() * grab_distance + camera.global_transform.origin
-        var desired_delta = desired_position - grabbed_object.global_transform.origin
-        var size = grabbed_object.get_node("MeshInstance").get_aabb().size
-        size *= grabbed_object.get_parent_spatial().scale.x
+        var delta = desired_position - grabbed_object.global_transform.origin
         
+        var o_size : Vector3 = grabbed_object.get_node("MeshInstance").get_aabb().size
+        o_size *= grabbed_object.get_parent_spatial().scale.x
+        var size = o_size
+        size = size.rotated(Vector3(1, 0, 0), grabbed_object.rotation.x)
+        size = size.rotated(Vector3(0, 1, 0), grabbed_object.rotation.y)
+        size = size.rotated(Vector3(0, 0, 1), grabbed_object.rotation.z)
+        size.x = max(abs(size.x), min(o_size.x, o_size.z))
+        size.y = max(abs(size.y), o_size.y)
+        size.z = max(abs(size.z), min(o_size.x, o_size.z))
+    
         var state = get_world().direct_space_state
         var ray_start = grabbed_object.global_transform.origin
-        var delta = desired_delta
-                
+        
         # x ray
         if !noclip:
-            var x_ray_end = ray_start + Vector3(delta.x + sign(delta.x)*size.x*0.5, 0, 0)
+            var x_ray_end : Vector3 = ray_start + Vector3(delta.x + sign(delta.x)*size.x*0.5, 0, 0)            
             var x_ray_result = state.intersect_ray(ray_start, x_ray_end, [self, grabbed_object])
             if !x_ray_result.empty() and (x_ray_result["collider"] is PhysicsBody):
                 delta.x = sign(delta.x)*(ray_start.distance_to(x_ray_result["position"]) - size.x*0.5)
                 
             # y ray
-            var y_ray_end = ray_start + Vector3(0, delta.y + sign(delta.y)*size.y*0.5, 0)
+            var y_ray_end : Vector3 = ray_start + Vector3(0, delta.y + sign(delta.y)*size.y*0.5, 0)
             var y_ray_result = state.intersect_ray(ray_start, y_ray_end, [self, grabbed_object])
             if !y_ray_result.empty() and (y_ray_result["collider"] is PhysicsBody):
                 delta.y = sign(delta.y)*(ray_start.distance_to(y_ray_result["position"]) - size.y*0.5)
             
             # z ray
-            var z_ray_end = ray_start + Vector3(0, 0, delta.z + sign(delta.z)*size.z*0.5)
+            var z_ray_end : Vector3 = ray_start + Vector3(0, 0, delta.z + sign(delta.z)*size.z*0.5)
             var z_ray_result = state.intersect_ray(ray_start, z_ray_end, [self, grabbed_object])
             if !z_ray_result.empty() and (z_ray_result["collider"] is PhysicsBody):
                 delta.z = sign(delta.z)*(ray_start.distance_to(z_ray_result["position"]) - size.z*0.5)
-        
+            
         grabbed_object.global_transform.origin += delta
         grabbed_object.rotation = rotation + grab_rotation
         
@@ -279,14 +292,15 @@ func update_infohud():
         $HUD/InfoHUD/IsFrozen.set_text("IsFrozen: No")
     
 func show_error(message = null):    
+    var label = $HUD/ErrorHUD/Error
     if message != null:
-        $HUD/ErrorHUD/Error.set_text(message)
+        label.set_text(label.get_text() + message + "\n")
         $HUD/ErrorHUD/Timer.wait_time = 3
         $HUD/ErrorHUD/Timer.start()
         
         
     if $HUD/ErrorHUD/Timer.time_left == 0:
-        $HUD/ErrorHUD/Error.set_text("")
+        label.set_text("")
        
 # ACTION METHODS
 func action_grab_ungrab():
@@ -332,7 +346,7 @@ func action_freeze_object():
             
             var distance = object.distance_to(player)
             var distance2 = object.distance_to(cam)
-            var min_distance = ACTION_RANGE_SHORT*grabbed_object.get_parent_spatial().scale.x
+            var min_distance = 5*grabbed_object.get_parent_spatial().scale.x
             if distance < min_distance or distance2 < min_distance:
                 show_error("Can't freeze grabbed objects that close to player!")
                 return
@@ -474,8 +488,8 @@ func action_alter_gravity():
         
     the_object.apply_impulse(Vector3(0, 0, 0), -camera.global_transform.basis.z.normalized())
 
-func action_create_object():
-    var spawned_object = object_cube.instance()
+func action_create_object(object):
+    var spawned_object = object.instance()
     the_world.add_child(spawned_object)
     
     var spawn_distance = ACTION_RANGE_SHORT
